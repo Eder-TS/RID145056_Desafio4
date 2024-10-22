@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import './App.css'
 
 interface TodoItem {
@@ -51,6 +51,22 @@ function App() {
   const getDoneTasks = (): TodoItem[] => {
     return todos.filter((todo) => todo.done)
   }
+
+  useEffect(() => {
+    if(isLoaded){
+      localStorage.setItem("tasks", JSON.stringify(todos))
+    }
+  }, [todos, isLoaded])
+
+  useEffect(() => {
+    const memoryTasks = localStorage.getItem("tasks")
+
+    if(memoryTasks){
+      setTodos(JSON.parse(memoryTasks))
+    }
+    
+    setIsLoaded(true)
+  },[])
 
   return (
     <div className='app'>
