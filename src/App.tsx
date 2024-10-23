@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import './App.css'
+import { useTheme } from './ThemeContext'
 
 interface TodoItem {
   id: string,
@@ -8,6 +9,9 @@ interface TodoItem {
 }
 
 function App() {
+  const memoryTasksKey = "tasks"
+
+  const { theme, toggleTheme } = useTheme()
   const [todos, setTodos] = useState<TodoItem[]>([])
   const [newTodo, setNewTodo] = useState<string>("")
   const [isLoaded, setIsLoaded] = useState(false)
@@ -54,12 +58,12 @@ function App() {
 
   useEffect(() => {
     if(isLoaded){
-      localStorage.setItem("tasks", JSON.stringify(todos))
+      localStorage.setItem(memoryTasksKey, JSON.stringify(todos))
     }
   }, [todos, isLoaded])
 
   useEffect(() => {
-    const memoryTasks = localStorage.getItem("tasks")
+    const memoryTasks = localStorage.getItem(memoryTasksKey)
 
     if(memoryTasks){
       setTodos(JSON.parse(memoryTasks))
@@ -69,8 +73,8 @@ function App() {
   },[])
 
   return (
-    <div className='app'>
-      <div className='container'>
+    <div className={`app ${theme}`}>
+      <div className={`container ${theme}`}>
         <h1>Lista de Tarefas - {getDoneTasks().length} / {todos.length}</h1>
 
         <div className='input-container'>
@@ -93,6 +97,10 @@ function App() {
             ))
           }
         </ol>
+
+        <button onClick={toggleTheme}>
+          Alterar para o tema { theme === "dark" ? "claro." : "escuro."}
+        </button>
       </div>
     </div>
   )
