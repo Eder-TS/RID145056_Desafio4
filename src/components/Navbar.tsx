@@ -13,7 +13,7 @@ export const Navbar = () => {
     return (
         <nav className={`navbar ${theme}`}>
             <NavbarButton
-                href='/organization'
+                href='/'
                 linkText='Organização'
                 isActive={organization}
             />
