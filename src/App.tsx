@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react'
 import './App.css'
 import { useTheme } from './ThemeContext'
 
+// COMPONENTS
+import { Navbar } from './components'
+
 interface TodoItem {
   id: string,
   text: string,
@@ -17,9 +20,9 @@ function App() {
   const [isLoaded, setIsLoaded] = useState(false)
 
   const addTask = (): void => {
-    
+
     // Tendo algum conteúdo no campo, segue com a criação da tarefa.
-    if(newTodo !== "") {
+    if (newTodo !== "") {
       const newId = crypto.randomUUID()
 
       const newTodoItem: TodoItem = {
@@ -37,8 +40,8 @@ function App() {
 
   const markTask = (id: string): void => {
     const updateTodos = todos.map((todo) => {
-      if(todo.id === id) {
-        return {...todo, done: !todo.done}
+      if (todo.id === id) {
+        return { ...todo, done: !todo.done }
       }
 
       return todo
@@ -57,7 +60,7 @@ function App() {
   }
 
   useEffect(() => {
-    if(isLoaded){
+    if (isLoaded) {
       localStorage.setItem(memoryTasksKey, JSON.stringify(todos))
     }
   }, [todos, isLoaded])
@@ -65,20 +68,24 @@ function App() {
   useEffect(() => {
     const memoryTasks = localStorage.getItem(memoryTasksKey)
 
-    if(memoryTasks){
+    if (memoryTasks) {
       setTodos(JSON.parse(memoryTasks))
     }
-    
+
     setIsLoaded(true)
-  },[])
+  }, [])
 
   return (
     <div className={`app ${theme}`}>
+
+      <Navbar />
+
       <div className={`container ${theme}`}>
+
         <h1>Lista de Tarefas - {getDoneTasks().length} / {todos.length}</h1>
 
         <div className='input-container'>
-          <input type="text" value={newTodo} onChange={(e) => setNewTodo(e.target.value)}/>
+          <input type="text" value={newTodo} onChange={(e) => setNewTodo(e.target.value)} />
           <button onClick={addTask}>Adicionar tarefa</button>
         </div>
 
@@ -86,9 +93,9 @@ function App() {
           {
             todos.map((todo) => (
               <li key={todo.id}>
-                <input type="checkbox" checked= {todo.done} onChange={() => markTask(todo.id)}/>
+                <input type="checkbox" checked={todo.done} onChange={() => markTask(todo.id)} />
 
-                <span style={{textDecoration: todo.done ? 'line-through' : 'none'}}>
+                <span style={{ textDecoration: todo.done ? 'line-through' : 'none' }}>
                   {todo.text}
                 </span>
 
@@ -99,7 +106,7 @@ function App() {
         </ol>
 
         <button onClick={toggleTheme}>
-          Alterar para o tema { theme === "dark" ? "claro." : "escuro."}
+          Alterar para o tema {theme === "dark" ? "claro." : "escuro."}
         </button>
       </div>
     </div>
