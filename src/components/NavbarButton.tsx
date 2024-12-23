@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom'
+
 // THEME
 import { useTheme } from '../ThemeContext'
 
@@ -11,11 +13,11 @@ export function NavbarButton(props: NavbarButtonProps) {
     const { theme, toggleTheme } = useTheme()
 
     return (
-        <a
+        <Link
             className={`button ${theme} ${isActive}`}
-            href={href}
+            to={href}
         >
             {linkText}
-        </a>
+        </Link>
     )
 }

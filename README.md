@@ -1,8 +1,8 @@
 O quê desenvolver neste projeto:
 
-- Uma barra superior com uma aba "Organização" e outra aba "Tarefas";
-- Na aba "Organização" criar campo para adicionar empresa, grupo ou local ao qual as tarefas se referem (localStorage);
-- Na aba "Organização" criar lista selecionável de organizações (radio button);
+- (OK) Uma barra superior com uma aba "Organização" e outra aba "Tarefas";
+- (OK) Na aba "Organização" criar campo para adicionar empresa, grupo ou local ao qual as tarefas se referem (localStorage);
+- (OK) Na aba "Organização" criar lista selecionável de organizações (radio button);
 - A aba tarefas deverá mostrar as tarefas pertinentes à organização selecionada;
 - O projeto deverá estar disponível num site para uso de todos;
 - Atender os requisitos do desafio 4 DNC.
