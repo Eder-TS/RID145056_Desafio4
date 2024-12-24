@@ -13,12 +13,20 @@ interface TodoItem {
 }
 
 function Tasks() {
-    const memoryTasksKey = "tasks"
-
     const { theme, toggleTheme } = useTheme()
+    const [memoryTasksKey, setMemoryTasksKey] = useState('')
     const [todos, setTodos] = useState<TodoItem[]>([])
     const [newTodo, setNewTodo] = useState<string>("")
     const [isLoaded, setIsLoaded] = useState(false)
+
+    // Seta o ponteiro para a memória correta
+    useEffect(() => {
+        const organization = localStorage.getItem('selectedOrganization')
+        if (organization && isLoaded) {
+            setMemoryTasksKey(`${organization}-tasks`)
+        }
+
+    }, [isLoaded])
 
     const addTask = (): void => {
 
@@ -68,13 +76,15 @@ function Tasks() {
 
     useEffect(() => {
         const memoryTasks = localStorage.getItem(memoryTasksKey)
-
+        console.log(memoryTasksKey)
         if (memoryTasks) {
             setTodos(JSON.parse(memoryTasks))
         }
 
         setIsLoaded(true)
     }, [])
+
+
 
     return (
         <div className={`app ${theme}`}>
