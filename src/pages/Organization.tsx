@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react"
+import { SetStateAction, useEffect, useState } from "react"
 
 // THEME
-import { useTheme } from "../ThemeContext"
+import { useTheme } from "../contexts/ThemeContext"
 
 // COMPONENTS
 import { Navbar } from "../components"
@@ -38,26 +38,43 @@ function Organization() {
             setOrganizations([...organizations, newOrganizationItem])
             // Limpando o campo de entrada.
             setNewOrganization("")
-            // Atualizando contexto
+            // Atualizando memória.
             setSelectedOrganization(newOrganizationItem.name)
         }
     }
 
     // Prepara o nome da organização selecionada
-    const selectOrganization = (name: string): void => {
-        setSelectedOrganization(name)
+    const selectOrganization = (event: { target: { value: SetStateAction<string> } }) => {
+        setSelectedOrganization(event.target.value)
     }
 
     const removeOrganization = (id: string): void => {
         const updateOrganizations = organizations.filter((organization) => organization.id !== id)
         setOrganizations(updateOrganizations)
+
+        // Exclui lista de tarefas se ainda existir
+        const clearOrganizationTasks = organizations.find((organization) => organization.id === id)
+        const toClear = clearOrganizationTasks?.name
+        if (localStorage.getItem(`${toClear}-tasks`)) {
+            localStorage.removeItem(`${toClear}-tasks`)
+        }
+
+        // Exclui o último item da memória pois
+        // a função de atualizar a memória não funciona quando
+        // o array de organizações não tem mais nenhuma organização.
+        // Também exclui a memória da organização selecionada.
+        if (updateOrganizations.length == 0) {
+            localStorage.removeItem(memoryOrganizationKey)
+            localStorage.removeItem(selectedOrganizationKey)
+        }
     }
 
     // Carrega o array de organizações na memória após
     // a memória ser conferida na renderização da página ou
     // o array ser atualizado.
     useEffect(() => {
-        if (isLoaded) {
+        if (isLoaded && organizations.length > 0) {
+
             localStorage.setItem(memoryOrganizationKey, JSON.stringify(organizations))
         }
     }, [organizations, isLoaded])
@@ -77,12 +94,13 @@ function Organization() {
     // Guarda na memória o nome da organização selecionada.
     useEffect(() => {
         if (selectedOrganization) {
-            localStorage.setItem(selectedOrganizationKey, JSON.stringify(selectedOrganization))
+            localStorage.setItem(selectedOrganizationKey, selectedOrganization)
         }
     }, [selectedOrganization])
 
+    // Seta a organização atual selecionada
     useEffect(() => {
-        const memorySelectedOrganization = localStorage.getItem(selectedOrganization)
+        const memorySelectedOrganization = localStorage.getItem(selectedOrganizationKey)
         if (memorySelectedOrganization) {
             setSelectedOrganization(memorySelectedOrganization)
         }
@@ -109,8 +127,9 @@ function Organization() {
                                 <input
                                     type="radio"
                                     name='organization'
-                                    checked={selectedOrganization === organization.name ? true : false}
-                                    onChange={() => selectOrganization(organization.name)}
+                                    value={organization.name}
+                                    checked={selectedOrganization === organization.name}
+                                    onChange={selectOrganization}
                                 />
 
                                 <span style={{ textDecoration: organization.done ? 'line-through' : 'none' }}>

@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 
 // THEME
-import { useTheme } from '../ThemeContext'
+import { useTheme } from '../contexts/ThemeContext'
 
 // TYPES
 import { NavbarButtonProps } from "../types"
