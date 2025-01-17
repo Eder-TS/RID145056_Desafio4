@@ -52,6 +52,10 @@ function Organization() {
         const updateOrganizations = organizations.filter((organization) => organization.id !== id)
         setOrganizations(updateOrganizations)
 
+        if (updateOrganizations.length > 0) {
+            setSelectedOrganization(updateOrganizations[0].name)
+        }
+
         // Exclui lista de tarefas se ainda existir
         const clearOrganizationTasks = organizations.find((organization) => organization.id === id)
         const toClear = clearOrganizationTasks?.name

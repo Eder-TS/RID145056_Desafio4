@@ -25,9 +25,11 @@ function Tasks() {
     const [newTodo, setNewTodo] = useState<string>("")
     const [isLoaded, setIsLoaded] = useState(false)
 
+    const organization = localStorage.getItem('selectedOrganization')
+
     // Seta o ponteiro para a memória correta
     useEffect(() => {
-        const organization = localStorage.getItem('selectedOrganization')
+        // const organization = localStorage.getItem('selectedOrganization')
 
         if (organization) {
             setMemoryTasksKey(`${organization}-tasks`)
@@ -63,7 +65,6 @@ function Tasks() {
         })
 
         setTodos(updateTodos)
-        // areAllDone()
     }
 
     const areAllDone = () => {
@@ -72,7 +73,7 @@ function Tasks() {
         })
 
         const organizations = localStorage.getItem('organizations')
-        const actualOrganizationMemory = localStorage.getItem('selectedOrganization')
+        const actualOrganizationMemory = organization // localStorage.getItem('selectedOrganization')
         if (areAllDone && organizations && actualOrganizationMemory) {
             const organizationsObject: OrganizationItem[] = JSON.parse(organizations)
             const thisOrganization = organizationsObject.find((organization) => { return organization.name === actualOrganizationMemory })
@@ -105,14 +106,13 @@ function Tasks() {
     }
 
     useEffect(() => {
-        const organization = localStorage.getItem('selectedOrganization')
+        // const organization = localStorage.getItem('selectedOrganization')
 
         if (isLoaded && todos.length > 0 && organization) {
             localStorage.setItem(memoryTasksKey, JSON.stringify(todos))
 
             areAllDone()
         }
-
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [todos, isLoaded])
 
@@ -138,7 +138,11 @@ function Tasks() {
 
                 <div className='input-container'>
                     <input type="text" value={newTodo} onChange={(e) => setNewTodo(e.target.value)} />
-                    <button onClick={addTask}>Adicionar tarefa</button>
+                    <button
+                        className="tooltip"
+                        onClick={addTask}
+                        disabled={organization ? false : true}
+                    >Adicionar tarefa</button>
                 </div>
 
                 <ol>
