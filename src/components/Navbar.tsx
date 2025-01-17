@@ -1,5 +1,5 @@
 // THEME
-import { useTheme } from '../ThemeContext'
+import { useTheme } from '../contexts/ThemeContext'
 
 // COMPONENTS
 import { NavbarButton } from './NavbarButton'

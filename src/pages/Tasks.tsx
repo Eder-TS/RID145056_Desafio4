@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 
 // THEME
-import { useTheme } from "../ThemeContext"
+import { useTheme } from "../contexts/ThemeContext"
 
 // COMPONENTS
 import { Navbar } from "../components"
@@ -12,13 +12,29 @@ interface TodoItem {
     done: boolean
 }
 
-function Tasks() {
-    const memoryTasksKey = "tasks"
+interface OrganizationItem {
+    id: string,
+    name: string,
+    done: boolean
+}
 
+function Tasks() {
     const { theme, toggleTheme } = useTheme()
+    const [memoryTasksKey, setMemoryTasksKey] = useState('')
     const [todos, setTodos] = useState<TodoItem[]>([])
     const [newTodo, setNewTodo] = useState<string>("")
     const [isLoaded, setIsLoaded] = useState(false)
+
+    const organization = localStorage.getItem('selectedOrganization')
+
+    // Seta o ponteiro para a memória correta
+    useEffect(() => {
+        // const organization = localStorage.getItem('selectedOrganization')
+
+        if (organization) {
+            setMemoryTasksKey(`${organization}-tasks`)
+        }
+    }, [])
 
     const addTask = (): void => {
 
@@ -51,9 +67,38 @@ function Tasks() {
         setTodos(updateTodos)
     }
 
+    const areAllDone = () => {
+        const areAllDone = todos.every((todo) => {
+            return todo.done
+        })
+
+        const organizations = localStorage.getItem('organizations')
+        const actualOrganizationMemory = organization // localStorage.getItem('selectedOrganization')
+        if (areAllDone && organizations && actualOrganizationMemory) {
+            const organizationsObject: OrganizationItem[] = JSON.parse(organizations)
+            const thisOrganization = organizationsObject.find((organization) => { return organization.name === actualOrganizationMemory })
+            const idThisOrganization = thisOrganization?.id
+            const updateOrganizations = organizationsObject.map((organization) => {
+                if (organization.id === idThisOrganization) {
+                    return { ...organization, done: organization.done = true }
+                }
+                return organization
+            })
+
+            localStorage.setItem('organizations', JSON.stringify(updateOrganizations))
+        }
+    }
+
     const removeTask = (id: string): void => {
         const updateTodos = todos.filter((todo) => todo.id !== id)
         setTodos(updateTodos)
+
+        // Exclui o último item da memória pois
+        // a função de atualizar a memória não funciona quando
+        // o array de tarefas não tem mais nenhuma tarefa.
+        if (updateTodos.length == 0) {
+            localStorage.removeItem(memoryTasksKey)
+        }
     }
 
     const getDoneTasks = (): TodoItem[] => {
@@ -61,9 +106,14 @@ function Tasks() {
     }
 
     useEffect(() => {
-        if (isLoaded) {
+        // const organization = localStorage.getItem('selectedOrganization')
+
+        if (isLoaded && todos.length > 0 && organization) {
             localStorage.setItem(memoryTasksKey, JSON.stringify(todos))
+
+            areAllDone()
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [todos, isLoaded])
 
     useEffect(() => {
@@ -72,9 +122,10 @@ function Tasks() {
         if (memoryTasks) {
             setTodos(JSON.parse(memoryTasks))
         }
-
         setIsLoaded(true)
-    }, [])
+    }, [memoryTasksKey])
+
+
 
     return (
         <div className={`app ${theme}`}>
@@ -87,7 +138,11 @@ function Tasks() {
 
                 <div className='input-container'>
                     <input type="text" value={newTodo} onChange={(e) => setNewTodo(e.target.value)} />
-                    <button onClick={addTask}>Adicionar tarefa</button>
+                    <button
+                        className="tooltip"
+                        onClick={addTask}
+                        disabled={organization ? false : true}
+                    >Adicionar tarefa</button>
                 </div>
 
                 <ol>
