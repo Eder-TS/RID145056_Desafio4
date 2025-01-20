@@ -29,8 +29,6 @@ function Tasks() {
 
     // Seta o ponteiro para a memória correta
     useEffect(() => {
-        // const organization = localStorage.getItem('selectedOrganization')
-
         if (organization) {
             setMemoryTasksKey(`${organization}-tasks`)
         }
@@ -73,7 +71,7 @@ function Tasks() {
         })
 
         const organizations = localStorage.getItem('organizations')
-        const actualOrganizationMemory = organization // localStorage.getItem('selectedOrganization')
+        const actualOrganizationMemory = organization
         if (areAllDone && organizations && actualOrganizationMemory) {
             const organizationsObject: OrganizationItem[] = JSON.parse(organizations)
             const thisOrganization = organizationsObject.find((organization) => { return organization.name === actualOrganizationMemory })
@@ -106,8 +104,6 @@ function Tasks() {
     }
 
     useEffect(() => {
-        // const organization = localStorage.getItem('selectedOrganization')
-
         if (isLoaded && todos.length > 0 && organization) {
             localStorage.setItem(memoryTasksKey, JSON.stringify(todos))
 
@@ -135,6 +131,8 @@ function Tasks() {
             <div className={`container ${theme}`}>
 
                 <h1>Lista de Tarefas - {getDoneTasks().length} / {todos.length}</h1>
+
+                <h2>{organization}</h2>
 
                 <div className='input-container'>
                     <input type="text" value={newTodo} onChange={(e) => setNewTodo(e.target.value)} />
