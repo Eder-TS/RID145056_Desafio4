@@ -34,8 +34,8 @@ body {
 }
 
 .button {
-  background: #28a745;
-  color: #fff;
+  background: #fff;
+  color: #28a745;
   font-size: 28px;
   font-weight: 600;
   display: flex;
@@ -53,13 +53,12 @@ body {
 }
 
 .button.active {
-  background: #fff;
-  color: #28a745;
+  background: #28a745;
+  color: #fff;
 }
 
 .button.dark.active {
-  background: #666;
-  color: #fff;
+  background: #222;
 }
 
 .container {
@@ -140,13 +139,21 @@ button {
   cursor: pointer;
 }
 
-button:hover {
+button:hover, .button:hover {
   background-color: #218838;
+}
+
+.button:hover {
+  color: #fff;
 }
 
 .container.dark button {
   background-color: #444;
   color: #fff;
+}
+
+.container.dark button:hover {
+  background-color: #218838;
 }
 
 ol {
@@ -185,4 +192,8 @@ li button:hover {
 
 .container.dark li button {
   background-color: #666;
+}
+
+.container.dark li button:hover {
+  background-color: #c82333;
 }

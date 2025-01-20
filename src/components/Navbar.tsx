@@ -10,18 +10,26 @@ export const Navbar = () => {
     const organization = ''
     const tasks = ''
 
+    const actualTab = window.document.location.href.endsWith('/')
+
+
+
     return (
         <nav className={`navbar ${theme}`}>
             <NavbarButton
                 href='/'
                 linkText='Organização'
-                isActive={organization}
+                isActive={
+                    actualTab ? 'active' : ''
+                }
             />
 
             <NavbarButton
                 href='/tarefas'
                 linkText='Tarefas'
-                isActive={tasks}
+                isActive={
+                    actualTab ? '' : 'active'
+                }
             />
         </nav>
     )
