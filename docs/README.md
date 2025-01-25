@@ -12,7 +12,8 @@ Para executar o projeto deve-se usar o comando `npm run dev` na linha de comando
 ## **Melhorias com relação a Versão 1**
 
 A versão anterior disponibiliza uma lista com opção de adicionar novos itens e marcar os itens já executados, além de poder remover qualquer item. Tudo salvo na memória do navegador (localStorage).<br>
-<img src="./images/version_1.png"><br><br>
+<img src="./images/version_1.png"><br>
+Versão 1<br><br>
 Nesta nova versão as informações ainda são salvas no localStorage, porém foi adicionada uma página onde são listadas as organizações às quais tarefas específicas podem ser adicionadas, sendo cada lista de tarefas associada a apenas uma organização.<br><br>
 <img src="./images/organizations.png"><br>
 Página de organizações<br><br>
@@ -200,22 +201,230 @@ function App() {
 
 <br>
 Então o fluxo entre as páginas pôde ser criado e organizado.<br>
-<img src="./images/flow_log.png"><br>
-```
+<img src="./images/flow_log.png"><br><br>
+Na primeira renderização em Organization.tsx é conferida a memória local se há alguma organização e carrega o array de organizações com a mesma.<br>
 
 ```
+useEffect(() => {
+    const memoryOrganization = localStorage.getItem(memoryOrganizationKey)
 
-O quê desenvolver neste projeto:
+    if (memoryOrganization) {
+        setOrganizations(JSON.parse(memoryOrganization))
+    }
 
-- (OK) Uma barra superior com uma aba "Organização" e outra aba "Tarefas";
-- (OK) Na aba "Organização" criar campo para adicionar empresa, grupo ou local ao qual as tarefas se referem (localStorage);
-- (OK) Na aba "Organização" criar lista selecionável de organizações (radio button);
-- (OK) A aba tarefas deverá mostrar as tarefas pertinentes à organização selecionada;
-- O projeto deverá estar disponível num site para uso de todos;
-- Atender os requisitos do desafio 4 DNC.
+    setIsLoaded(true)
+
+}, [])
+```
+
+<br>
+Carrega o array de organizações na memória após a memória ser conferida na renderização da página ou o array de organizações ser atualizado.<br>
+
+```
+useEffect(() => {
+    if (isLoaded && organizations.length > 0) {
+
+        localStorage.setItem(memoryOrganizationKey, JSON.stringify(organizations))
+    }
+}, [organizations, isLoaded])
 
 ```
 
-```
+<br>
+Prepara o nome da organização selecionada.<br>
 
 ```
+const selectOrganization = (event: { target: { value: SetStateAction<string> } }) => {
+    setSelectedOrganization(event.target.value)}
+
+```
+
+<br>
+Guarda na memória o nome da organização selecionada.<br>
+
+```
+useEffect(() => {
+    if (selectedOrganization) {
+        localStorage.setItem(selectedOrganizationKey, selectedOrganization)
+    }
+}, [selectedOrganization])
+
+```
+
+<br>
+Seta a organização atual selecionada.<br>
+
+```
+useEffect(() => {
+    const memorySelectedOrganization = localStorage.getItem(selectedOrganizationKey)
+    if (memorySelectedOrganization) {
+        setSelectedOrganization(memorySelectedOrganization)
+    }
+}, [])
+
+```
+
+<br>
+A função de excluir organização exclui qualquer tarefa desta organização que ainda esteja na memória, além de limpar qualquer registro da memória quando é excluído o último item.<br>
+
+```
+const removeOrganization = (id: string): void => {
+    const updateOrganizations = organizations.filter((organization) => organization.id !== id)
+    setOrganizations(updateOrganizations)
+
+    if (updateOrganizations.length > 0) {
+        setSelectedOrganization(updateOrganizations[0].name)
+    }
+
+    const clearOrganizationTasks = organizations.find((organization) => organization.id === id)
+    const toClear = clearOrganizationTasks?.name
+    if (localStorage.getItem(`${toClear}-tasks`)) {
+        localStorage.removeItem(`${toClear}-tasks`)
+    }
+
+    if (updateOrganizations.length == 0) {
+        localStorage.removeItem(memoryOrganizationKey)
+        localStorage.removeItem(selectedOrganizationKey)
+    }
+}
+
+```
+
+<br>
+Todo este tratamento com `selectedOrganization` serve para manter a coesão da informação na memória. Esta informação será usada na página de tarefas (Tasks.tsx) para mostrar as tarefas corretas.<br>
+A seguir, já em Tasks.tsx, é buscado na memória se há uma organização que foi selecionada em Organization.tsx.<br>
+O array na memória ganha o nome da organização, seguido de `-tasks` para indicar a lista de tarefas daquela organização.<br>
+
+```
+const organization = localStorage.getItem('selectedOrganization')
+
+useEffect(() => {
+    if (organization) {
+        setMemoryTasksKey(`${organization}-tasks`)
+    }
+}, [])
+
+```
+
+<br>
+A constante `organization` também serve para habilitar o botão de adicionar tarefas, impedindo que tarefas sejam criadas se não existir uma organização.<br>
+
+```
+<div className='input-container'>
+    <input type="text" value={newTodo} onChange={(e) => setNewTodo(e.target.value)} />
+    <button
+        className="tooltip"
+        onClick={addTask}
+        disabled={organization ? false : true}
+    >Adicionar tarefa</button>
+</div>
+
+```
+
+<br>
+Neste hook é atualizado o array de tarefas na memória (por qualquer motivo que o array da aplicação seja atualizado), neste momento é chamada a arrow function `areAllDone`...<br>
+
+```
+useEffect(() => {
+    if (isLoaded && todos.length > 0 && organization) {
+        localStorage.setItem(memoryTasksKey, JSON.stringify(todos))
+
+        areAllDone()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [todos, isLoaded])
+
+```
+
+<br>
+...Estando todas as tarefas "prontas" a organização é marcada como `Done` no array de organizações na memória. Isso fará com que o nome da organização apareça taxado na página de organizações, dando uma indicação visual de que todas as tarefas daquela organização foram executadas. Isso evita de o usuário ter de abrir a aba de tarefas de cada organização.<br>
+
+```
+const areAllDone = () => {
+    const areAllDone = todos.every((todo) => {
+        return todo.done
+    })
+
+    const organizations = localStorage.getItem('organizations')
+    const actualOrganizationMemory = organization
+    if (areAllDone && organizations && actualOrganizationMemory) {
+        const organizationsObject: OrganizationItem[] = JSON.parse(organizations)
+        const thisOrganization = organizationsObject.find((organization) => { return organization.name === actualOrganizationMemory })
+        const idThisOrganization = thisOrganization?.id
+        const updateOrganizations = organizationsObject.map((organization) => {
+            if (organization.id === idThisOrganization) {
+                return { ...organization, done: organization.done = true }
+            }
+            return organization
+        })
+
+        localStorage.setItem('organizations', JSON.stringify(updateOrganizations))
+    }
+}
+```
+
+<br>
+A arrow function de deletar tarefas também teve de ser atualizada, pois não estava excluindo o último ítem da memória quando era excluído o último ítem do array da aplicação.<br>
+
+```
+const removeTask = (id: string): void => {
+    const updateTodos = todos.filter((todo) => todo.id !== id)
+    setTodos(updateTodos)
+
+    if (updateTodos.length == 0) {
+        localStorage.removeItem(memoryTasksKey)
+    }
+}
+
+```
+
+<br>
+
+Outras funções não foram descritas pois já são herdadas da versão 1 como, por exemplo, as funções de criar as listas na memória que são usadas em ambas as páginas nesta versão.<br>
+Algumas melhorias também foram feitas na folha de estilos, tanto para mostrar o botão correto da cada aba como acertos no modo escuro.<br>
+<img src="./images/log_style.png"><br><br>
+Classes que controlam o estilo da navbar e dos botões da mesma.<br>
+
+```
+.navbar {
+  position: fixed;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  width: 440px;
+}
+
+.button {
+  background: #fff;
+  color: #28a745;
+  font-size: 28px;
+  font-weight: 600;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 50%;
+  height: 60px;
+  text-decoration: none;
+  border-radius: 8px 8px 0 0;
+}
+
+.button.dark {
+  background: #333;
+  color: #fff;
+}
+
+.button.active {
+  background: #28a745;
+  color: #fff;
+}
+
+.button.dark.active {
+  background: #222;
+}
+
+```
+
+## **Exemplo de uso**
+
+[![Q-fazer - exemplo de uso](https://img.youtube.com/vi/S1GEhu6aTZE/0.jpg)](https://youtu.be/S1GEhu6aTZE)
